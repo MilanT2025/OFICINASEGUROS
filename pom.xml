@@ -16,6 +16,21 @@
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.4.2.jre8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
     </dependencies>
     
     <properties>
@@ -24,4 +39,5 @@
         <maven.compiler.target>20</maven.compiler.target>
         <exec.mainClass>com.mycompany.sistasistencia.Sistasistencia</exec.mainClass>
     </properties>
+    
 </project>

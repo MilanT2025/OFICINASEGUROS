@@ -30,7 +30,7 @@ public class sistasistencia extends javax.swing.JFrame {
 
         labelFechaHora = new JLabel();
         labelFechaHora.setFont(new Font("Arial", Font.BOLD, 24));
-        labelFechaHora.setBounds(150, 400, 400, 100);
+        labelFechaHora.setBounds(50, 50, 400, 100);
 
         // Añadir el JLabel al JFrame
         add(labelFechaHora);

@@ -14,24 +14,26 @@ import javax.swing.JOptionPane;
  */
 public class ConexionBD {
     // Conexion base de datos de servidor Galenos
+
     static Connection cnn = null;
 
     static String usuario = "sa";
     static String contraseña = "123456";
     static String bd = "HOSPITAL_SIS";
-    static String ip = "192.168.10.114";
-    static String puerto = "1433;"+"encrypt=true;trustServerCertificate=true";
+    static String ip = "192.168.11.98";
+    static String puerto = "1433;" + "encrypt=true;trustServerCertificate=true";
 
-    String cadena = "jdbc:sqlserver://"+ip+";"+puerto+"/"+bd;
+    String cadena = "jdbc:sqlserver://" + ip + ";" + puerto + "/" + bd;
 
     public static Connection establecerConexion() {
         try {
-            String cadena = "jdbc:sqlserver://localhost\\SQLEXPRESS:"+puerto+";"+"databaseName="+bd;
-            cnn = DriverManager.getConnection(cadena,usuario,contraseña);
+            String cadena = "jdbc:sqlserver://localhost\\SQLEXPRESS:" + puerto + ";" + "databaseName=" + bd;
+            cnn = DriverManager.getConnection(cadena, usuario, contraseña);
 //            JOptionPane.showMessageDialog(null, "Se conecto correctamente a la base de datos");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al conectar a la base de datos, error: " + e.toString());
+//            JOptionPane.showMessageDialog(null, "Error al conectar a la base de datos, error: " + e.toString());
         }
         return cnn;
     }
+
 }
