@@ -100,30 +100,41 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
     }
 
     private void RegistrarEntrada() {
-        Connection cnn = null;
-        PreparedStatement pst = null;
+        String sql = "INSERT INTO [dbo].[M_SisAsistencia] "
+                + "           ([NroDocumento] "
+                + "           ,[Nombres] "
+                + "           ,[HoraIngreso] "
+                + "           ,[HoraSalida] "
+                + "           ,[BreakSalida] "
+                + "           ,[BreakIngreso] "
+                + "           ,[Fecha]) "
+                + "     VALUES "
+                + "           (?,?,?,?,?,?,?)";
 
-        try {
-            DefaultTableModel modelo1 = (DefaultTableModel) tabla_asistencia.getModel();
-            cnn = ConexionBD.establecerConexion();
+        try (Connection cn = ConexionBD.establecerConexion(); PreparedStatement pst = cn.prepareStatement(sql)) {
 
-            if (cnn == null) {
+            if (cn == null) {
                 JOptionPane.showMessageDialog(null, "No se pudo establecer la conexión con la base de datos.");
                 return;
             }
 
-            String sql = "INSERT INTO [dbo].[SisAsistencia] "
-                    + "([NroDocumento], [Nombres], [HoraIngreso], [BreakSalida], [BreakIngreso], [HoraSalida], [Fecha]) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            DefaultTableModel modelo = (DefaultTableModel) tabla_asistencia.getModel();
 
-            pst = cnn.prepareStatement(sql);
-            pst.setString(1, String.valueOf(tabla_asistencia.getValueAt(0, 0)));
-            pst.setString(2, String.valueOf(tabla_asistencia.getValueAt(0, 1)));
-            pst.setString(3, String.valueOf(tabla_asistencia.getValueAt(0, 2)));
-            pst.setString(4, String.valueOf(tabla_asistencia.getValueAt(0, 3)));
-            pst.setString(5, String.valueOf(tabla_asistencia.getValueAt(0, 4)));
-            pst.setString(6, String.valueOf(tabla_asistencia.getValueAt(0, 5)));
-            pst.setString(7, String.valueOf(tabla_asistencia.getValueAt(0, 6)));
+            // Verificación de datos
+            for (int i = 1; i <= 13; i++) {
+                if (modelo.getValueAt(0, i) == null || modelo.getValueAt(0, i).toString().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Los datos no pueden estar vacíos.");
+                    return;
+                }
+            }
+
+            pst.setString(1, String.valueOf(modelo.getValueAt(0, 2)));
+            pst.setString(2, String.valueOf(modelo.getValueAt(0, 3)));
+            pst.setString(3, String.valueOf(modelo.getValueAt(0, 9)));
+            pst.setString(4, String.valueOf(modelo.getValueAt(0, 10)));
+            pst.setString(5, String.valueOf(modelo.getValueAt(0, 11)));
+            pst.setString(6, String.valueOf(modelo.getValueAt(0, 12)));
+            pst.setString(7, String.valueOf(modelo.getValueAt(0, 13)));
 
             int n = pst.executeUpdate();
             if (n > 0) {
@@ -132,85 +143,115 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
                 JOptionPane.showMessageDialog(null, "Error al registrar entrada");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(RegistrarAsistencia.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(null, "Error de SQL: " + ex.getMessage());
+            Logger.getLogger(RegistrarAsistencia.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage());
             Logger.getLogger(RegistrarAsistencia.class.getName()).log(Level.SEVERE, null, e);
-            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
-        } finally {
-            // Cierra recursos
-            try {
-                if (pst != null) {
-                    pst.close();
-                }
-                if (cnn != null) {
-                    cnn.close();
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(RegistrarAsistencia.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }
 
     private void RegistroAlmuerzo1() {
-        Connection cnn;
-        PreparedStatement pst;
-        try {
-            cnn = ConexionBD.establecerConexion();
-            String sql = "UPDATE [dbo].[SisAsistencia] "
-                    + "   SET [Almuerzo1] ='?' "
-                    + "WHERE IdUsuario= '?' and Fecha= '?'";
-            preparedStatement.setString(1, String.valueOf(tabla_asistencia.getValueAt(0, 3)));
-            preparedStatement.setInt(2, Integer.parseInt(String.valueOf(tabla_asistencia.getValueAt(0, 0))));
-            preparedStatement.setString(3, String.valueOf(tabla_asistencia.getValueAt(0, 4)));
-            int res = preparedStatement.executeUpdate();
+        String sql = "UPDATE M_SisAsistencia "
+                + "SET BreakSalida = ? "
+                + "WHERE IdUsuario = ? AND Fecha = ?";
 
-            if (res > 0) {
-                JOptionPane.showMessageDialog(null, "Se registro correctamente");
+        try (Connection cn = ConexionBD.establecerConexion(); PreparedStatement pst = cn.prepareStatement(sql)) {
 
-            } else {
-                JOptionPane.showMessageDialog(null, "Error al registrar salida");
-
+            if (cn == null) {
+                JOptionPane.showMessageDialog(null, "No se pudo establecer la conexión con la base de datos.");
+                return;
             }
 
-        } catch (SQLException | NumberFormatException | HeadlessException ex) {
-            System.out.println(ex);
+            // Obtener los valores de la tabla
+            String BreakSalida = String.valueOf(tabla_asistencia.getValueAt(0, 11));
+            int idUsuario = Integer.parseInt(String.valueOf(tabla_asistencia.getValueAt(0, 6)));
+            String fecha = String.valueOf(tabla_asistencia.getValueAt(0, 13));
+
+            // Validación de datos
+            if (BreakSalida.isEmpty() || fecha.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Los campos no pueden estar vacíos.");
+                return;
+            }
+
+            // Establecer parámetros
+            pst.setString(1, BreakSalida);
+            pst.setInt(2, idUsuario);
+            pst.setString(3, fecha);
+
+            // Ejecutar la actualización
+            int res = pst.executeUpdate();
+            if (res > 0) {
+                JOptionPane.showMessageDialog(null, "Registro actualizado correctamente");
+            } else {
+                JOptionPane.showMessageDialog(null, "Error al registrar salida");
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error de SQL: " + ex.getMessage());
+            Logger.getLogger(RegistrarAsistencia.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Error de formato numérico: " + ex.getMessage());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + ex.getMessage());
         }
     }
 
     private void RegistroAlmuerzo2() {
-        Connection cnn;
-        PreparedStatement pst;
-        try {
-            cnn = ConexionBD.establecerConexion();
-            String sql = "UPDATE [dbo].[SisAsistencia] "
-                    + "   SET [Almuerzo2] ='?' "
-                    + "WHERE IdUsuario= '?' and Fecha= '?'";
-            preparedStatement.setString(1, String.valueOf(tabla_asistencia.getValueAt(0, 3)));
-            preparedStatement.setInt(2, Integer.parseInt(String.valueOf(tabla_asistencia.getValueAt(0, 0))));
-            preparedStatement.setString(3, String.valueOf(tabla_asistencia.getValueAt(0, 4)));
-            int res = preparedStatement.executeUpdate();
+        String sql = "UPDATE M_SisAsistencia "
+                + "SET BreakIngreso = ? "
+                + "WHERE IdUsuario = ? AND Fecha = ?";
 
+        try (Connection cn = ConexionBD.establecerConexion(); PreparedStatement pst = cn.prepareStatement(sql)) {
+
+            if (cn == null) {
+                JOptionPane.showMessageDialog(null, "No se pudo establecer la conexión con la base de datos.");
+                return;
+            }
+
+            // Obtener los valores de la tabla
+            String BreakIngreso = String.valueOf(tabla_asistencia.getValueAt(0, 3));
+            int idUsuario = Integer.parseInt(String.valueOf(tabla_asistencia.getValueAt(0, 0)));
+            String fecha = String.valueOf(tabla_asistencia.getValueAt(0, 4));
+
+            // Validación de datos
+            if (BreakIngreso.isEmpty() || fecha.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Los campos no pueden estar vacíos.");
+                return;
+            }
+
+            // Establecer parámetros
+            pst.setString(1, BreakIngreso);
+            pst.setInt(2, idUsuario);
+            pst.setString(3, fecha);
+
+            // Ejecutar la actualización
+            int res = pst.executeUpdate();
             if (res > 0) {
-                JOptionPane.showMessageDialog(null, "Se registro correctamente");
-
+                JOptionPane.showMessageDialog(null, "Registro actualizado correctamente");
             } else {
                 JOptionPane.showMessageDialog(null, "Error al registrar entrada");
             }
 
-        } catch (SQLException | NumberFormatException | HeadlessException ex) {
-            System.out.println(ex);
+        } catch (SQLException ex) {
+//            JOptionPane.showMessageDialog(null, "Error de SQL: " + ex.getMessage());
+//            Logger.getLogger(RegistrarAsistencia.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Error de formato numérico: " + ex.getMessage());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + ex.getMessage());
         }
     }
 
     private void RegistroSalida() {
-        Connection cnn;
+        Connection cn;
         PreparedStatement pst;
         try {
-            cnn = ConexionBD.establecerConexion();
-            String sql = "UPDATE [dbo].[SisAsistencia] "
-                    + "   SET [HoraSalida] ='?' "
-                    + "WHERE IdUsuario= '?' and Fecha= '?'";
+            cn = ConexionBD.establecerConexion();
+            String sql = "UPDATE M_SisAsistencia "
+                    + "SET HoraSalida = ? "
+                    + "WHERE IdUsuario = ? AND Fecha = ?";
+
             preparedStatement.setString(1, String.valueOf(tabla_asistencia.getValueAt(0, 3)));
             preparedStatement.setInt(2, Integer.parseInt(String.valueOf(tabla_asistencia.getValueAt(0, 0))));
             preparedStatement.setString(3, String.valueOf(tabla_asistencia.getValueAt(0, 4)));
@@ -243,34 +284,49 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
     }
 
     private void LlenarTabla(String usuario, String contraseña, String es) {
-        DefaultTableModel modelo = new DefaultTableModel();
-        Connection cnn = ConexionBD.establecerConexion();
-        String sql = "SELECT * FROM Usuarios WHERE usuario LIKE '" + usuario + "'  AND  contraseña '" + contraseña + "'  ";
+        String sql = "SELECT * FROM M_SisAsistencia WHERE Usuario = ? AND Contraseña = ?";
 
-        String[] datos = new String[12];
-        try {
-            Statement st = cnn.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+        try (Connection cn = ConexionBD.establecerConexion(); PreparedStatement pst = cn.prepareStatement(sql)) {
+
+            if (cn == null) {
+                JOptionPane.showMessageDialog(null, "No se pudo establecer la conexión con la base de datos.");
+                return;
+            }
+
+            // Establecer parámetros
+            pst.setString(1, usuario);
+            pst.setString(2, contraseña);
+
+            // Ejecutar la consulta
+            ResultSet rs = pst.executeQuery();
+
+            DefaultTableModel modelo = new DefaultTableModel();
+            String[] datos = new String[12];
+
+            if (!rs.isBeforeFirst()) { // Verifica si hay resultados
+                JOptionPane.showMessageDialog(null, "No existe ningún registro con ese usuario y contraseña.");
+                return;
+            }
 
             while (rs.next()) {
                 datos[0] = rs.getString(1);
                 datos[1] = rs.getString(2);
-                datos[2] = hora;
+                datos[2] = hora; // Asegúrate de que 'hora' esté definido
                 if (es.equals("2")) {
                     datos[3] = hora;
                 } else {
                     datos[3] = "hora sin registrar";
                 }
-                datos[4] = fecha;
+                datos[4] = fecha; // Asegúrate de que 'fecha' esté definido
 
                 modelo.addRow(datos);
             }
             tabla_asistencia.setModel(modelo);
-            /*  if(datos[0]==null){
-                 JOptionPane.showMessageDialog(null, "no existe ningun registro con ese usario y contraseña" );
-            }*/
 
         } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error de SQL: " + ex.getMessage());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + ex.getMessage());
         }
     }
 
@@ -366,7 +422,12 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
 
         tabla_asistencia.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
                 "DNI", "PERSONAL", "ENTRADA", "<html><center>BREAK<br>SALIDA</center></html>", "<html><center>BREAK<br>INGRESO</center></html>", "SALIDA", "FECHA"
@@ -495,19 +556,19 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistroActionPerformed
-        if (cbxRegistro.getSelectedItem().equals("ENTRADA")) {
+        if (cbxRegistro.getSelectedItem().equals("Entrada")) {
             RegistrarEntrada();
 
         }
-        if (cbxRegistro.getSelectedItem().equals("BREAK SALIDA")) {
+        if (cbxRegistro.getSelectedItem().equals("Break Salida")) {
             RegistroAlmuerzo1();
 
         }
-        if (cbxRegistro.getSelectedItem().equals("BREAK INGRESO")) {
+        if (cbxRegistro.getSelectedItem().equals("Break Ingreso")) {
             RegistroAlmuerzo2();
 
         }
-        if (cbxRegistro.getSelectedItem().equals("SALIDA")) {
+        if (cbxRegistro.getSelectedItem().equals("Salida")) {
             RegistroSalida();
 
         }

@@ -4,14 +4,10 @@
  */
 package vista;
 
-/**
- *
- * @author ejmg3
- */
 public class Main {
         public static void main(String[] args) {
-        ConexionBD cnn = new ConexionBD();
-        cnn.establecerConexion();
+        ConexionBD cn = new ConexionBD();
+        ConexionBD.establecerConexion();
         
     }
 }
