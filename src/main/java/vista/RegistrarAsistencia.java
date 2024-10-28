@@ -48,8 +48,9 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
     public RegistrarAsistencia(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        setTitle("SISTEMA DE CONTROL DE ASISTENCIA");
+        setTitle("REGISTRO DE ASISTENCIA");
         setSize(800, 800);
+        this.setIconImage(new ImageIcon(System.getProperty("user.dir") + "/asistencia.png").getImage());
         setLocationRelativeTo(null);
         DefaultTableModel modelo = new DefaultTableModel();
         // Actualizar la fecha y la hora cada segundo
@@ -63,8 +64,6 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
 
         actualizarFechaYHora(); // Llamar una vez para mostrar la fecha y hora inmediatamente
 
-        labelFechaHora = new JLabel();
-        labelFechaHora.setFont(new Font("Arial", Font.BOLD, 24));
         labelFechaHora.setBounds(50, 50, 50, 50);
 
         // Personalizar el encabezado de la tabla
@@ -88,7 +87,7 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
         tabla_asistencia.setRowHeight(50);
 
         tabla_asistencia.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        
+
         ActualizarDatos();
     }
 
@@ -100,8 +99,35 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
         labelFechaHora.setText("Fecha: " + fechaActual + " - Hora: " + horaActual);
 
     }
-    
-    private void ActualizarDatos(){
+
+    private void filtrarRegistrosPorUsuario(String usuario) {
+        DefaultTableModel modelo = (DefaultTableModel) tabla_asistencia.getModel();
+        DefaultTableModel nuevoModelo = new DefaultTableModel();
+
+        // Suponiendo que tu tabla tiene las mismas columnas
+        for (int i = 0; i < modelo.getColumnCount(); i++) {
+            nuevoModelo.addColumn(modelo.getColumnName(i));
+        }
+
+        for (int i = 0; i < modelo.getRowCount(); i++) {
+            String usuarioEnTabla = (String) modelo.getValueAt(i, 1); // Suponiendo que el usuario está en la columna 1
+            if (usuarioEnTabla.equals(usuario)) {
+                nuevoModelo.addRow(new Object[]{
+                    modelo.getValueAt(i, 0), // NroDocumento
+                    modelo.getValueAt(i, 1), // Nombres
+                    modelo.getValueAt(i, 2), // HoraIngreso
+                    modelo.getValueAt(i, 3), // HoraSalida
+                    modelo.getValueAt(i, 4), // BreakSalida
+                    modelo.getValueAt(i, 5), // BreakIngreso
+                    modelo.getValueAt(i, 6) // Fecha
+                });
+            }
+        }
+
+        tabla_asistencia.setModel(nuevoModelo);
+    }
+
+    private void ActualizarDatos() {
         try {
             String[] data = new String[7];
             DefaultTableModel modelo = (DefaultTableModel) tabla_asistencia.getModel();
@@ -135,7 +161,7 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
         try {
             Connection cn = ConexionBD.establecerConexion();
             Statement st = cn.createStatement();
-            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim()+ "'";
+            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim() + "'";
             ResultSet rs = st.executeQuery(sql);
             if (rs.next()) {
                 sql = "INSERT INTO [dbo].[M_SisAsistencia] "
@@ -161,7 +187,7 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
                 txtUsuario.requestFocus();
                 txtUsuario.selectAll();
             }
-            
+
             rs.close();
             st.close();
             cn.close();
@@ -172,10 +198,10 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
     }
 
     private void RegistroAlmuerzo1() {
-         try {
+        try {
             Connection cn = ConexionBD.establecerConexion();
             Statement st = cn.createStatement();
-            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim()+ "'";
+            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim() + "'";
             ResultSet rs = st.executeQuery(sql);
             if (rs.next()) {
                 sql = "UPDATE M_SisAsistencia "
@@ -196,27 +222,27 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
                 txtUsuario.requestFocus();
                 txtUsuario.selectAll();
             }
-            
+
             rs.close();
             st.close();
             cn.close();
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-        
+
     }
 
     private void RegistroAlmuerzo2() {
         try {
             Connection cn = ConexionBD.establecerConexion();
             Statement st = cn.createStatement();
-            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim()+ "'";
+            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim() + "'";
             ResultSet rs = st.executeQuery(sql);
             if (rs.next()) {
                 sql = "UPDATE M_SisAsistencia "
                         + "SET BreakIngreso = GETDATE() "
                         + "WHERE idEmpleado = ? AND Fecha = CONVERT(DATE, GETDATE())";
-                
+
                 PreparedStatement pst = cn.prepareStatement(sql);
                 pst.setInt(1, rs.getInt(1));
                 int n = pst.executeUpdate();
@@ -232,7 +258,7 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
                 txtUsuario.requestFocus();
                 txtUsuario.selectAll();
             }
-            
+
             rs.close();
             st.close();
             cn.close();
@@ -245,13 +271,13 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
         try {
             Connection cn = ConexionBD.establecerConexion();
             Statement st = cn.createStatement();
-            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim()+ "'";
+            String sql = "SELECT idEmpleado FROM Empleados WHERE Usuario = '" + txtUsuario.getText().trim() + "' AND Contraseña = '" + passContraseña.getText().trim() + "'";
             ResultSet rs = st.executeQuery(sql);
             if (rs.next()) {
                 sql = "UPDATE M_SisAsistencia "
                         + "SET HoraSalida = GETDATE() "
                         + "WHERE idEmpleado = ? AND Fecha = CONVERT(DATE, GETDATE())";
-                
+
                 PreparedStatement pst = cn.prepareStatement(sql);
                 pst.setInt(1, rs.getInt(1));
                 int n = pst.executeUpdate();
@@ -267,7 +293,7 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
                 txtUsuario.requestFocus();
                 txtUsuario.selectAll();
             }
-            
+
             rs.close();
             st.close();
             cn.close();
@@ -277,7 +303,6 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
 
     }
 
-    
     private void calcula() {
         Calendar calendario = new GregorianCalendar();
         Date fechahora = new Date();
@@ -291,9 +316,8 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
 
     }
 
-    
     private void LlenarTabla(String usuario, String contraseña, String es) {
-        String sql = "SELECT * FROM M_SisAsistencia WHERE Usuario LIKE '" +usuario+ "' AND Contraseña = '"+contraseña+"'";
+        String sql = "SELECT * FROM M_SisAsistencia WHERE Usuario LIKE '" + usuario + "' AND Contraseña = '" + contraseña + "'";
 
         try (Connection cn = ConexionBD.establecerConexion(); PreparedStatement pst = cn.prepareStatement(sql)) {
 
@@ -338,8 +362,8 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(null, "Error inesperado: " + ex.getMessage());
         }
     }
-    
-    private void limpiarCampos(){
+
+    private void limpiarCampos() {
         txtUsuario.setText("");
         passContraseña.setText("");
     }
@@ -570,7 +594,7 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
             cbxRegistro.showPopup();
             return;
         }
-        
+
         if (cbxRegistro.getSelectedItem().equals("Entrada")) {
             RegistrarEntrada();
             limpiarCampos();
