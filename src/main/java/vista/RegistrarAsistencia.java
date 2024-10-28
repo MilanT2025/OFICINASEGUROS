@@ -622,8 +622,10 @@ public class RegistrarAsistencia extends javax.swing.JDialog {
     }//GEN-LAST:event_btnRegistroActionPerformed
 
     private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
-        limpiarCampos();
-        cbxRegistro.setSelectedItem("<<Seleccione Uno>>");
+        NuevoUsuario dialog = new NuevoUsuario(new javax.swing.JFrame(), true);
+        dialog.setVisible(true);
+
+ 
     }//GEN-LAST:event_btnNuevoActionPerformed
 
     private void cbxRegistroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxRegistroActionPerformed
