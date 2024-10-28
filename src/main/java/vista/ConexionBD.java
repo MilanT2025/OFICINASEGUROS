@@ -30,7 +30,7 @@ public class ConexionBD {
         try {
             String cadena = "jdbc:sqlserver://localhost\\SQLEXPRESS:" + puerto + ";" + "databaseName=" + bd;
             cn = DriverManager.getConnection(cadena, usuario, contraseña);
-            JOptionPane.showMessageDialog(null, "Se conecto correctamente a la base de datos");
+            //JOptionPane.showMessageDialog(null, "Se conecto correctamente a la base de datos");
         } catch (SQLException e) {
 //            JOptionPane.showMessageDialog(null, "Error al conectar a la base de datos, error: " + e.toString());
         }
